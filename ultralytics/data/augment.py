@@ -388,8 +388,15 @@ class RandomPerspective:
         R = np.eye(3, dtype=np.float32)
         a = random.uniform(-self.degrees, self.degrees)
         a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
-        s = random.uniform(1 - self.scale, 1 + self.scale)
+
+        #s = random.uniform(1 - self.scale, 1 + self.scale)
         # s = 2 ** random.uniform(-scale, scale)
+        
+        if random.randint(0,9) > 2:
+            s = random.uniform(1 - 0.2, 1 + 0.2)
+        else:
+            s = random.uniform(1, 1.6)
+
         R[:2] = cv2.getRotationMatrix2D(angle=a, center=(0, 0), scale=s)
 
         # Shear
@@ -811,13 +818,33 @@ class Albumentations:
             check_version(A.__version__, '1.0.3', hard=True)  # version requirement
 
             T = [
-                A.Blur(p=0.01),
-                A.MedianBlur(p=0.01),
-                A.ToGray(p=0.01),
-                A.CLAHE(p=0.01),
-                A.RandomBrightnessContrast(p=0.0),
-                A.RandomGamma(p=0.0),
-                A.ImageCompression(quality_lower=75, p=0.0)]  # transforms
+                A.OneOf([
+                    A.Blur(p=1),
+                    A.MedianBlur(p=1),
+                    A.CLAHE(p=0.01),
+                ], p=0.05),
+                A.OneOf([
+                    A.ToGray(p=1),
+                    A.RandomBrightnessContrast(p=1),
+                    A.RandomGamma(p=1),
+                    A.ChannelShuffle(p=1),
+                ], p=0.05),
+                A.OneOf([
+                    A.ISONoise(p=1),
+                    A.ImageCompression(quality_lower=20, p=1)
+                ], p=0.05),
+            ]
+            #T = [
+            #    A.Blur(p=0.01),
+            #    A.MedianBlur(p=0.01),
+            #    A.ToGray(p=0.01),
+            #    A.CLAHE(p=0.01),
+            #    A.RandomBrightnessContrast(p=0.01),
+            #    A.RandomGamma(p=0.01),
+            #    A.ChannelShuffle(p=0.01),
+            #    A.ISONoise(p=0.01),
+            #    A.ImageCompression(quality_lower=20, p=0.01)]  # transforms
+            
             self.transform = A.Compose(T, bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
 
             LOGGER.info(prefix + ', '.join(f'{x}'.replace('always_apply=False, ', '') for x in T if x.p))

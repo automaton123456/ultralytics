@@ -358,6 +358,21 @@ class RandomPerspective:
             s (float): Scale factor.
         """
 
+        #Apply motion blur
+        if random.randint(1, 50) == 1:
+            blur_magnitude = random.uniform(5, 25)  # Adjust range as needed
+            angle = random.uniform(0, 360)  # Random angle
+        
+            # Create the motion blur kernel
+            kernel_size = int(blur_magnitude)
+            kernel = np.zeros((kernel_size, kernel_size))
+            kernel[int((kernel_size-1)/2), :] = np.ones(kernel_size)
+            kernel = cv2.warpAffine(kernel, cv2.getRotationMatrix2D((kernel_size/2-0.5, kernel_size/2-0.5), angle, 1.0), (kernel_size, kernel_size))
+            kernel = kernel / kernel_size
+        
+            # Apply the motion blur to the image
+            img = cv2.filter2D(img, -1, kernel)
+
         # Center
         C = np.eye(3, dtype=np.float32)
 
@@ -372,7 +387,7 @@ class RandomPerspective:
         # Rotation and Scale
         R = np.eye(3, dtype=np.float32)
         a = random.uniform(-self.degrees, self.degrees)
-        # a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
+        a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
         s = random.uniform(1 - self.scale, 1 + self.scale)
         # s = 2 ** random.uniform(-scale, scale)
         R[:2] = cv2.getRotationMatrix2D(angle=a, center=(0, 0), scale=s)

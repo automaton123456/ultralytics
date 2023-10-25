@@ -821,18 +821,19 @@ class Albumentations:
                 A.OneOf([
                     A.Blur(p=1),
                     A.MedianBlur(p=1),
-                    A.CLAHE(p=0.01),
-                ], p=0.05),
+                ], p=0.01),
                 A.OneOf([
                     A.ToGray(p=1),
                     A.RandomBrightnessContrast(p=1),
                     A.RandomGamma(p=1),
                     A.ChannelShuffle(p=1),
-                ], p=0.05),
+                ], p=0.01),
                 A.OneOf([
                     A.ISONoise(p=1),
                     A.ImageCompression(quality_lower=20, p=1)
-                ], p=0.05),
+                ], p=0.01),
+                
+                A.CLAHE(p=0.01)
             ]
             #T = [
             #    A.Blur(p=0.01),
